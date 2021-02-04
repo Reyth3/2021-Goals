@@ -19,6 +19,8 @@ namespace BC.Shared.Models
         public string EmailAddress { get; set; }
         [Required, MaxLength(48)]
         public string Password { get; set; }
+        [Required, MaxLength(42)]
+        public string Salt { get; set; }
 
         [Required, MaxLength(32)]
         public string FirstName { get; set; }

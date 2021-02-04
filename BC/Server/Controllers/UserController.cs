@@ -1,6 +1,9 @@
 ﻿using BC.Server.Models.DB;
+using BC.Server.Services;
 using BC.Shared;
+using BC.Shared.Models;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -18,28 +21,36 @@ namespace BC.Server.Controllers
     {
         private readonly DataContext _context;
         private readonly ILogger<UserController> _logger;
+        private readonly IUserValidationService _userValidation;
 
-        public UserController(DataContext context, ILogger<UserController> logger)
+        public UserController(DataContext context, ILogger<UserController> logger, IUserValidationService userValidation)
         {
             _context = context;
             _logger = logger;
+            _userValidation = userValidation;
+        }
+
+        private async Task AuthenticateUser(UserProfile user)
+        {
+            var claim = new Claim(ClaimTypes.Name, user.EmailAddress);
+            var identity = new ClaimsIdentity(new Claim[] { claim }, "ServerAuth");
+            var principal = new ClaimsPrincipal(identity);
+            await HttpContext.SignInAsync(principal);
         }
 
         [HttpPost("login")]
         public async Task<ActionResult<UserProfileVM>> LogInUser([FromBody]LogInVM logIn)
         {
-            // TODO: Make this actually secure
-            var match = _context.UserProfiles.FirstOrDefault(o => o.EmailAddress == logIn.Email && o.Password == logIn.Password);
-            if(match != null)
+            UserProfile match = null;
+            try
             {
-                var claim = new Claim(ClaimTypes.Name, match.EmailAddress);
-                var identity = new ClaimsIdentity(new Claim[] { claim }, "ServerAuth");
-                var principal = new ClaimsPrincipal(identity);
-                await HttpContext.SignInAsync(principal);
-            }
+                match = await _userValidation.LogInUser(logIn);
+            } catch(Exception ex) { return new UnauthorizedObjectResult(ex.Message); }
+            if (match != null)
+                await AuthenticateUser(match);
             if (match == null)
                 return new UnauthorizedResult();
-            else return (UserProfileVM)match;
+            else return new OkObjectResult((UserProfileVM)match);
         }
 
         [HttpGet("current")]
@@ -51,6 +62,25 @@ namespace BC.Server.Controllers
                 user = _context.UserProfiles.FirstOrDefault(o => o.EmailAddress == User.FindFirstValue(ClaimTypes.Name));
             }
             return user == null ? new UserProfileVM() : user;
+        }
+
+        [HttpGet("logout")]
+        public async Task<ActionResult> LogOutUser()
+        {
+            await HttpContext.SignOutAsync();
+            return new OkResult();
+        }
+
+        [HttpPost("register")]
+        public async Task<ActionResult<UserProfileVM>> PostRegister([FromBody]RegistrationVM vm)
+        {
+            UserProfile match = null;
+            try
+            {
+                match = await _userValidation.RegisterUser(vm);
+            }
+            catch (Exception ex) { return new UnauthorizedObjectResult(ex.Message); }
+            return new OkObjectResult((UserProfileVM)match);
         }
     }
 }

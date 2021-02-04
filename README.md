@@ -17,7 +17,7 @@ With this project I aim to further my understanding of building responsive web a
 * ~~Dependencies integrated with built-in .NET Core Dependency Injection engine~~
 * ~~Basic user authentication (log in, log out, session management on both client & server)~~
 * ~~Basic authorization (Content accessible for signed in users only)~~
-* ***Secure password storage (encryption, salt)***
+* ~~***Secure password storage (encryption, salt)***~~
 * Facebook & Google authentication functionality
 * CRUD operations implementation & dashboard for editing goal lists
 * Data Access with a repository pattern

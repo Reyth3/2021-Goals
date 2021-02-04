@@ -1,3 +1,4 @@
+using BC.Server.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -37,6 +38,8 @@ namespace BC.Server
             {
                 options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
             }).AddCookie();
+
+            services.AddScoped<IUserValidationService, PBKDF2UserValidationService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
