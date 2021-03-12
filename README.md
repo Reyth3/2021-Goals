@@ -18,6 +18,7 @@ With this project I aim to further my understanding of building responsive web a
 * ~~Basic user authentication (log in, log out, session management on both client & server)~~
 * ~~Basic authorization (Content accessible for signed in users only)~~
 * ~~***Secure password storage (encryption, salt)***~~
+* ***Unit tests & mocking for the server-side WebAPI***
 * Facebook & Google authentication functionality
 * CRUD operations implementation & dashboard for editing goal lists
 * Data Access with a repository pattern
